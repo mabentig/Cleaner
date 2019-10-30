@@ -12,7 +12,8 @@ namespace Cleaner
     /// </summary>
     public class Game1 : Game
     {
-        int roomNumber = 2;
+
+        int roomNumber = 0;
 
         #region Inget att bry sig om!
         //----------------------------------------Variabler och objekt
@@ -49,6 +50,9 @@ namespace Cleaner
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
+            //Ändrar uppdateringsfrekvensen
+//            TargetElapsedTime = new TimeSpan(0, 0, 0, 0, 10);
+
         }
 
         //----------------------------------------Metoder
@@ -60,7 +64,6 @@ namespace Cleaner
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
             IsMouseVisible = true;
             graphics.PreferredBackBufferHeight = ScreenHeight;
             graphics.PreferredBackBufferWidth = ScreenWidth;
@@ -97,47 +100,52 @@ namespace Cleaner
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
             if (TimeLeft > 0)
             {
                 elapsedSeconds = (int)gameTime.TotalGameTime.TotalSeconds;
-                MouseState newMouseState = Mouse.GetState();
-                if (newMouseState.LeftButton == ButtonState.Pressed)
-                    for (int i = 0; i < dirtManager.dirts.Count; i++)
-                    {
-                        GameObject tile = dirtManager.dirts[i];
-                        if (tile.Hitbox.Contains(newMouseState.Position))
-                        {
-                            tile.color = Color.Turquoise;
-                            obstacles.obstacles.Add(tile);
-                            dirtManager.dirts.RemoveAt(i);
-                        }
 
-                    }
+                //Om man vill kunna "måla" egna hinder med musen
+                /*                MouseState newMouseState = Mouse.GetState();
+                                if (newMouseState.LeftButton == ButtonState.Pressed)
+                                    for (int i = 0; i < dirtManager.dirts.Count; i++)
+                                    {
+                                        GameObject tile = dirtManager.dirts[i];
+                                        if (tile.Hitbox.Contains(newMouseState.Position))
+                                        {
+                                            tile.color = Color.Turquoise;
+                                            obstacles.obstacles.Add(tile);
+                                            dirtManager.dirts.RemoveAt(i);
+                                        }
+
+                                    }
+                */
 
                 Algorithm();
 
                 dirtManager.cleans.AddRange(cleaner.Update(dirtManager.dirts, obstacles.obstacles, trackManager));
 
+                //Ljud
                 if (cleaner.IsColliding)
                 {
                     b.CreateInstance().Play();
-//                    if (bump.State == SoundState.Playing)
-//                      bump.Stop();
-   //                 bump.Play();
+                    //                    if (bump.State == SoundState.Playing)
+                    //                      bump.Stop();
+                    //                 bump.Play();
                 }
                 if (cleaner.IsDriving)
                     slurp.Play();
                 else
                     slurp.Pause();
 
-                slurp.Pitch=(float)rng.NextDouble()*2-1;
+                slurp.Pitch = (float)rng.NextDouble() * 2 - 1;
 
                 base.Update(gameTime);
             }
-    }
+        }
 
         /// <summary>
         /// This is called when the game should draw itself.
@@ -171,24 +179,17 @@ namespace Cleaner
         /// </summary>
         public void Algorithm()
         {
+            //            cleaner.Forward();
             if (cleaner.IsColliding)
             {
                 cleaner.Reverse(20);
- //               if (!cleaner.IsRotating)
-                    cleaner.Rotate(100 + rng.Next(-30, 30));
-//                    cleaner.Rotate(100 * (2 * rng.Next(0, 2) - 1));
+                //                cleaner.Rotate(150);
             }
-            else if (!cleaner.IsRotating)
+            if (!cleaner.IsDriving)
             {
-                cleaner.Rotate(rng.Next(-60, 61));
 
-                if (!cleaner.IsDriving)
-                {
-                    cleaner.Forward(50);
-//                    if(rng.Next(10)==0)
-//                        cleaner.Rotate(10 * rng.Next(-3, 4));// * (2 * rng.Next(0, 2) - 1));
-                }
-
+                cleaner.Rotate(37 + rng.Next(1, 15));
+                cleaner.Forward();
             }
         }
     }
